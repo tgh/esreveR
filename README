@@ -1,0 +1,11 @@
+esreveR README file. June 27, 2009. Tyler Hayes. Portland, OR.
+
+esreveR is an audio plug-in using LADSPA (Linux Audio Developers Simple Programming API).
+It's simple effect is just to take the specified sound source and reverse it (esreveR is
+Reverse backwards).
+
+It is written in C with much help from Bart Massey, Dave Phillips, and Richard Furse--
+the source file(s) provide the official thanks and acknowledgements.
+
+This plug-in can be used with any audio program that supports LADSPA plug-ins.  See your
+favorite audio program's specifications to see if it supports LADSPA plug-ins.
