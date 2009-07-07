@@ -33,7 +33,17 @@
 //--------------------------------
 
 typedef struct {
-	//buffer pointers the host has connected to the plugin
+	// the sample rate (given by host from instantiate_Reverse() )
+	LADSPA_Data rev_sample_rate;
+	
+	// the location of the sampled audio data (the buffer)
+	LADSPA_Data * buffer;
+	
+	// the size of the buffer
+	unsigned long buffer_size;
+	unsigned long write_pointer;
+	
+	// data locations for the input & output audio ports
 	LADSPA_Data * Input;
 	LADSPA_Data * Output;
 } Reverse;
@@ -43,11 +53,38 @@ typedef struct {
 //---------------
 
 /*
- * Creates a Reverse plugin instance
+ * Creates a Reverse plugin instance by allocating space for a plugin handle.
+ * This function returns a LADSPA_Handle (which is a void * -- a pointer to
+ * anything).
  */
-LADSPA_HANDLE instantiate_Reverse(const LADSPA_Descriptor * descriptor, unsigned long sample_rate)
+LADSPA_Handle instantiate_Reverse(const LADSPA_Descriptor * descriptor, unsigned long loc_sample_rate)
 {
+	Reverse * reverse;	// for a Reverse struct instance
 	
+	// allocate space for a Reverse struct instance
+	reverse = (Reverse *) malloc(sizeof(Reverse));
+	
+	// return NULL if malloc failed for some reason
+	if (reverse == NULL)
+		return NULL;
+	
+	// set the instance's buffer size to a power of 2 bigger than the sample rate
+	reverse->buffer_size = 1;
+	while (reverse->buffer_size <= loc_sample_rate)
+		reverse->buffer_size <<= 1;
+	 
+	reverse->buffer = (LADSPA_Data *) calloc(reverse->buffer_size, sizeof(LADSPA_Data));
+	
+	// free the space allocated for the instance and return NULL if calloc failed
+	if (reverse->buffer == NULL)
+	{
+		free(reverse);
+		return NULL;
+	}
+	
+	reverse->write_pointer = 0;
+	
+	return reverse;
 }
 
 /*
@@ -137,7 +174,7 @@ void _init()
 		 * assign the copyright info of the plugin (NOTE: use "None" for no copyright
 		 * as per ladspa.h)
 		 */
-		reverse_descriptor->Copyright = strdup("None");	//might be changed later <-------
+		reverse_descriptor->Copyright = strdup("GPL");
 		
 		/*
 		 * assign the number of ports for the plugin.  since there are no control
