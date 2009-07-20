@@ -111,7 +111,7 @@ void run_Reverse(LADSPA_Handle instance, unsigned long sample_count)
 	// set the ouput samples to the reverse order of the input samples
 	while (index >= 0)
 	{
-		*(ouput++) = input[index];
+		*(output++) = input[index];
 		--index;
 	}
 }
@@ -285,7 +285,7 @@ void _init()
  * Returns a descriptor of the requested plugin type (there is only one plugin
  * type in this library).
  */
-const LADSPA_Descriptor * ladpsa_descriptor(unsigned long index)
+const LADSPA_Descriptor * ladspa_descriptor(unsigned long index)
 {
 	if (index == 0)
 		return reverse_descriptor;
@@ -314,7 +314,7 @@ void _fini()
 			free((char *) reverse_descriptor->PortNames[i]);
 		
 		free((char **) reverse_descriptor->PortNames);
-		free((LADSPA_PortRangeHint *) reverse_descriptor->PortRangeHints;
+		free((LADSPA_PortRangeHint *) reverse_descriptor->PortRangeHints);
 		
 		free(reverse_descriptor);
 	}
