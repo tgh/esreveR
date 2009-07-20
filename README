@@ -1,11 +1,33 @@
-esreveR README file. June 27, 2009. Tyler Hayes. Portland, OR.
+ESREVER
+-------
+July 20, 2009. Tyler Hayes. Portland, OR.
 
 esreveR is an audio plug-in using LADSPA (Linux Audio Developers Simple Programming API).
-It's simple effect is just to take the specified sound source and reverse it (esreveR is
-Reverse backwards).
+My first idea for a LADSPA plugin was to simply take a sound file and reverse it, because
+to my surprise I didn't see any on the internet that performed such a simple effect.
+But to my ignorance, pretty much all audio editing hosts already have that effect built-in.
+Not only that, but LADSPA plugins are mainly for effects that act like guitar effects
+pedals and can't take any entire file and manipulate it as such because the plugins use
+chunks of samples rather than the whole sound file.
 
-It is written in C with much help from Bart Massey, Dave Phillips, and Richard Furse--
-the source file(s) provide the official thanks and acknowledgements.
+So this plugin takes each chunk of samples send by the host and reverses them.  Not much
+practical use for this, but more of a random effect for interest.
 
-This plug-in can be used with any audio program that supports LADSPA plug-ins.  See your
-favorite audio program's specifications to see if it supports LADSPA plug-ins.
+The name esreveR is just Reverse backwards if you didn't already catch that.
+
+It is written in C with much help from Bart Massey, Tom Szilagyi, David Benson,
+Dave Phillips, and Richard Furse--the source file(s) provide the official
+thanks and acknowledgements.
+
+This plug-in can be used with any audio program that supports LADSPA plug-ins.
+See your favorite audio program's specifications to see if it supports LADSPA
+plug-ins.  I used Audacity to test the plugin, but will most likely use Ardour
+as my primary audio tool.
+
+I am still a student programmer at the time of this writing, so some of the comments
+in the source code are detailed and directed at the beginner as well.  Hopefully
+the comments will be beneficial to those who were like me in learning the API,
+and not too annoying for the pro's out there.
+
+To install, make sure the LADSPA_PATH variable in the Makefile is correct to your
+environment, and just run (as root) make install.
