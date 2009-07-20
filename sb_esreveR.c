@@ -59,7 +59,7 @@ typedef struct {
  * This function returns a LADSPA_Handle (which is a void * -- a pointer to
  * anything).
  */
-LADSPA_Handle instantiate_Reverse(const LADSPA_Descriptor * descriptor, unsigned long loc_sample_rate)
+LADSPA_Handle instantiate_Reverse()
 {
 	Reverse * reverse;	// for a Reverse struct instance
 	
@@ -94,7 +94,8 @@ void connect_port_to_Reverse(LADSPA_Handle instance, unsigned long Port, LADSPA_
 //-----------------------------------------------------------------------------
 
 /*
- * Here is where the actual audio manipulation is done.
+ * Here is where the actual audio manipulation is done.  It takes the sample
+ * buffer and reverses the order of the samples.
  */
 void run_Reverse(LADSPA_Handle instance, unsigned long sample_count)
 {
@@ -104,12 +105,19 @@ void run_Reverse(LADSPA_Handle instance, unsigned long sample_count)
 	// set local pointers to appropriate sample buffers
 	LADSPA_Data * input = reverse->Input;
 	LADSPA_Data * output = reverse->Output;
-	
+		
 	// set an index into the input buffer starting with the last sample
 	unsigned long index = sample_count - 1;
 
-	// set the ouput samples to the reverse order of the input samples
-	while (index >= 0)
+	/*
+	 * set the ouput samples to the reverse order of the input samples.
+	 *
+	 * NOTE: since index is an unsigned long integer, when it is equal
+	 * to 0 and then decremented, the value becomes that huge number that
+	 * is represented as 0xFFFFFFFFFFFFFFFF in hex, and not -1, of course.
+	 * Hence, the 'index != 0xFFFFFFFFFFFFFFFF'.
+	 */
+	while (index != 0xFFFFFFFFFFFFFFFF)
 	{
 		*(output++) = input[index];
 		--index;
@@ -159,7 +167,7 @@ void _init()
 		 * NOTE: in case you were wondering, strdup() from the string library makes a duplicate
 		 * string of the argument and returns the duplicate's pointer (a char *).
 		 */
-		reverse_descriptor->Label = strdup("reverse");
+		reverse_descriptor->Label = strdup("esreveR");
 		
 		/*
 		 * assign the special property of the plugin, which is any of the three
@@ -193,7 +201,13 @@ void _init()
 																		// PortDescriptors is a const *.
 		
 		// allocate space for the temporary array with a length of the number of ports (PortCount)
-		temp_descriptor_array = (LADSPA_PortDescriptor *) calloc(2, sizeof(LADSPA_PortDescriptor));
+		temp_descriptor_array = (LADSPA_PortDescriptor *) calloc(PORT_COUNT, sizeof(LADSPA_PortDescriptor));
+		
+		/*
+		* set the instance LADSPA_PortDescriptor array (PortDescriptors) pointer to
+		* the location temp_descriptor_array is pointing at.
+		*/
+		reverse_descriptor->PortDescriptors = (const LADSPA_PortDescriptor *) temp_descriptor_array;
 		
 		/*
 		 * set the port properties by ORing specific bit masks defined in ladspa.h.
@@ -211,12 +225,6 @@ void _init()
 		temp_descriptor_array[REVERSE_OUTPUT] = LADSPA_PORT_OUTPUT | LADSPA_PORT_AUDIO;
 		
 		/*
-		 * set the instance LADSPA_PortDescriptor array (PortDescriptors) pointer to
-		 * the location temp_descriptor_array is pointing at.
-		 */
-		reverse_descriptor->PortDescriptors = (const LADSPA_PortDescriptor *) temp_descriptor_array;
-		
-		/*
 		 * set temp_descriptor_array to NULL for housekeeping--we don't need that local
 		 * variable anymore.
 		 */
@@ -229,17 +237,17 @@ void _init()
 		// allocate the space for two port names
 		temp_port_names = (char **) calloc(PORT_COUNT, sizeof(char *));
 		
+		/*
+		* set the instance PortNames array pointer to the location temp_port_names
+		* is pointing at.
+		*/
+		reverse_descriptor->PortNames = (const char **) temp_port_names;
+		
 		// set the name of the input port
 		temp_port_names[REVERSE_INPUT] = strdup("Input");
 		
 		// set the name of the ouput port
 		temp_port_names[REVERSE_OUTPUT] = strdup("Output");
-		
-		/*
-		 * set the instance PortNames array pointer to the location temp_port_names
-		 * is pointing at.
-		 */
-		reverse_descriptor->PortNames = (const char **) temp_port_names;
 		
 		// reset temp variable to NULL for housekeeping
 		temp_port_names = NULL;
@@ -249,7 +257,13 @@ void _init()
 														// PortRangeHints is a const *.
 		
 		// allocate space for two port hints (see ladspa.h for info on 'hints')									
-		temp_hints = (LADSPA_PortRangeHint *) calloc(2, sizeof(LADSPA_PortRangeHint));
+		temp_hints = (LADSPA_PortRangeHint *) calloc(PORT_COUNT, sizeof(LADSPA_PortRangeHint));
+		
+		/*
+		* set the instance PortRangeHints pointer to the location temp_hints
+		* is pointed at.
+		*/
+		reverse_descriptor->PortRangeHints = (const LADSPA_PortRangeHint *) temp_hints;
 		
 		/*
 		 * set the port hint descriptors (which are ints). Since this is a simple
@@ -257,11 +271,6 @@ void _init()
 		 */
 		temp_hints[REVERSE_INPUT].HintDescriptor = 0;
 		temp_hints[REVERSE_OUTPUT].HintDescriptor = 0;
-		
-		/* set the instance PortRangeHints pointer to the location temp_hints
-		 * is pointed at.
-		 */
-		reverse_descriptor->PortRangeHints = (const LADSPA_PortRangeHint *) temp_hints;
 		
 		// reset temp variable to NULL for housekeeping
 		temp_hints = NULL;
@@ -276,7 +285,6 @@ void _init()
 		reverse_descriptor->deactivate = NULL;
 		reverse_descriptor->cleanup = cleanup_Reverse;
 	}
-	
 }
 
 //-----------------------------------------------------------------------------
