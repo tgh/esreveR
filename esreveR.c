@@ -5,11 +5,12 @@
  * Please see the file COPYING in the source
  * distribution of this software for license terms.
  *
- * This LADSPA plugin simple reverses a given sound.
+ * This LADSPA plugin reverses sections of the given sound.
  *
  * NOTE: even though the official name of this plugin is "esreveR", the name
  * 'Reverse' is used throughout this code for readability.
  */
+
 
 //----------------
 //-- INCLUSIONS --
@@ -18,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ladspa.h"
+
 
 //-----------------------
 //-- DEFINED CONSTANTS --
@@ -28,25 +30,25 @@
 #define REVERSE_INPUT 0
 #define REVERSE_OUTPUT 1
 
+/*
+ * Other constants
+ */
+// the plugin's unique ID given by Richard Furse (ladspa@muse.demon.co.uk)
+#define UNIQUE_ID 4302
+// the number of ports involved
+#define PORT_COUNT 2
+
+
 //--------------------------------
 //-- STRUCT FOR PORT CONNECTION --
 //--------------------------------
 
 typedef struct {
-	// the sample rate (given by host from instantiate_Reverse() )
-	LADSPA_Data rev_sample_rate;
-	
-	// the location of the sampled audio data (the buffer)
-	LADSPA_Data * buffer;
-	
-	// the size of the buffer
-	unsigned long buffer_size;
-	unsigned long write_pointer;
-	
 	// data locations for the input & output audio ports
 	LADSPA_Data * Input;
 	LADSPA_Data * Output;
 } Reverse;
+
 
 //---------------
 //-- FUNCTIONS --
@@ -64,70 +66,73 @@ LADSPA_Handle instantiate_Reverse(const LADSPA_Descriptor * descriptor, unsigned
 	// allocate space for a Reverse struct instance
 	reverse = (Reverse *) malloc(sizeof(Reverse));
 	
-	// return NULL if malloc failed for some reason
-	if (reverse == NULL)
-		return NULL;
-	
-	// set the instance's buffer size to a power of 2 bigger than the sample rate
-	reverse->buffer_size = 1;
-	while (reverse->buffer_size <= loc_sample_rate)
-		reverse->buffer_size <<= 1;
-	 
-	reverse->buffer = (LADSPA_Data *) calloc(reverse->buffer_size, sizeof(LADSPA_Data));
-	
-	// free the space allocated for the instance and return NULL if calloc failed
-	if (reverse->buffer == NULL)
-	{
-		free(reverse);
-		return NULL;
-	}
-	
-	reverse->write_pointer = 0;
-	
+	// send the LADSPA_Handle to the host. If malloc failed, NULL is returned.
 	return reverse;
 }
 
+//-----------------------------------------------------------------------------
+
 /*
- *
+ * Make a connection between a specified port and it's corresponding data location.
+ * For example, the output port should be "connected" to the place in memory where
+ * that sound data to be played is located.
  */
 void connect_port_to_Reverse(LADSPA_Handle instance, unsigned long Port, LADSPA_Data * data_location)
 {
+	Reverse * reverse;
 	
+	// cast the (void *) instance to (Revolution *) and set it to local pointer
+	reverse = (Reverse *) instance;
+	
+	// direct the appropriate data pointer to the appropriate data location
+	if (Port == REVERSE_INPUT)
+		reverse->Input = data_location;
+	else if (Port == REVERSE_OUTPUT)
+		reverse->Output = data_location;
 }
 
-/*
- *
- */
-void activate_Reverse(LADSPA_Handle instance)
-{
-	
-}
+//-----------------------------------------------------------------------------
 
 /*
- *
+ * Here is where the actual audio manipulation is done.
  */
 void run_Reverse(LADSPA_Handle instance, unsigned long sample_count)
 {
+	// set local pointer to plugin instance
+	Reverse * reverse = (Reverse *) instance;
+
+	// set local pointers to appropriate sample buffers
+	LADSPA_Data * input = reverse->Input;
+	LADSPA_Data * output = reverse->Output;
 	
+	// set an index into the input buffer starting with the last sample
+	unsigned long index = sample_count - 1;
+
+	// set the ouput samples to the reverse order of the input samples
+	while (index >= 0)
+	{
+		*(ouput++) = input[index];
+		--index;
+	}
 }
 
-/*
- *
- */
-void deactivate_Reverse(LADSPA_Handle instance)
-{
-	
-}
+//-----------------------------------------------------------------------------
 
 /*
- *
+ * Frees the dynamic memory allocated for the Reverse structure instance.
  */
 void cleanup_Reverse(LADSPA_Handle instance)
 {
-	
+	if (instance)
+		free(instance);
 }
 
+//-----------------------------------------------------------------------------
+
+// global LADSPA_Descriptor used by _init(), _fini(), and ladpsa_descriptor()
 LADSPA_Descriptor * reverse_descriptor = NULL;
+
+//-----------------------------------------------------------------------------
 
 /*
  * The _init() function is called whenever this plugin is first loaded
@@ -145,8 +150,8 @@ void _init()
 	// make sure malloc worked properly before initializing the struct fields
 	if (reverse_descriptor)
 	{
-		// assign the unique ID of the plugin given by ?
-		reverse_descriptor->UniqueID = 0;	// This will be changed later when I get an offical ID <------
+		// assign the unique ID of the plugin
+		reverse_descriptor->UniqueID = UNIQUE_ID;
 		
 		/*
 		 * assign the label of the plugin. since there are no control features for this
@@ -180,7 +185,7 @@ void _init()
 		 * assign the number of ports for the plugin.  since there are no control
 		 * features for Reverse, there are only 2 ports: audio input and output.
 		 */
-		reverse_descriptor->PortCount = 2;
+		reverse_descriptor->PortCount = PORT_COUNT;
 		
 		LADSPA_PortDescriptor * temp_descriptor_array;	// used for allocating and initailizing a
 																		// LADSPA_PortDescriptor array (which is
@@ -222,7 +227,7 @@ void _init()
 											// reverse_descriptor->PortNames is a const char * const *.
 
 		// allocate the space for two port names
-		temp_port_names = (char **) calloc(2, sizeof(char *));
+		temp_port_names = (char **) calloc(PORT_COUNT, sizeof(char *));
 		
 		// set the name of the input port
 		temp_port_names[REVERSE_INPUT] = strdup("Input");
@@ -264,21 +269,23 @@ void _init()
 		// set the instance's function pointers to appropriate functions
 		reverse_descriptor->instantiate = instantiate_Reverse;
 		reverse_descriptor->connect_port = connect_port_to_Reverse;
-		reverse_descriptor->activate = activate_Reverse;
+		reverse_descriptor->activate = NULL;
 		reverse_descriptor->run = run_Reverse;
 		reverse_descriptor->run_adding = NULL;
 		reverse_descriptor->set_run_adding_gain = NULL;
-		reverse_descriptor->deactivate = deactivate_Reverse;
+		reverse_descriptor->deactivate = NULL;
 		reverse_descriptor->cleanup = cleanup_Reverse;
 	}
 	
 }
 
+//-----------------------------------------------------------------------------
+
 /*
  * Returns a descriptor of the requested plugin type (there is only one plugin
  * type in this library).
  */
-const LADSPA_Descriptor * get_ladpsa_descriptor(unsigned long index)
+const LADSPA_Descriptor * ladpsa_descriptor(unsigned long index)
 {
 	if (index == 0)
 		return reverse_descriptor;
@@ -286,10 +293,31 @@ const LADSPA_Descriptor * get_ladpsa_descriptor(unsigned long index)
 		return NULL;
 }
 
+//-----------------------------------------------------------------------------
+
 /*
- *
+ * This function is automatically called when the host is done with the plugin
+ * (when the dynamic library is unloaded).  If frees all dynamic memory allocated
+ * for the LADSPA_Descriptor structure instantiated by reverse_descriptor.
  */
 void _fini()
 {
-	
+	if (reverse_descriptor)
+	{
+		free((char *) reverse_descriptor->Label);
+		free((char *) reverse_descriptor->Name);
+		free((char *) reverse_descriptor->Maker);
+		free((char *) reverse_descriptor->Copyright);
+		
+		int i = 0;
+		for (i = 0; i < reverse_descriptor->PortCount; ++i)
+			free((char *) reverse_descriptor->PortNames[i]);
+		
+		free((char **) reverse_descriptor->PortNames);
+		free((LADSPA_PortRangeHint *) reverse_descriptor->PortRangeHints;
+		
+		free(reverse_descriptor);
+	}
 }
+
+// EOF
