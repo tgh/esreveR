@@ -7,6 +7,15 @@
  *
  * This LADSPA plugin reverses sections of the given sound.
  *
+ * Thanks to:
+ * - Bart Massey of Portland State University (http://web.cecs.pdx.edu/~bart/)
+ *   for his direct help
+ * - Richard Furse (http://www.muse.demon.co.uk/) for his examples
+ * - David Benson (http://gdam.ffem.org/ladspa-doc/ladspa.html) for his
+ *   tutorial
+ * - Dave Phillips (http://gdam.ffem.org/ladspa-doc/ladspa.html) for his
+ *   ladspa information
+ * 
  * NOTE: even though the official name of this plugin is "esreveR", the name
  * 'Reverse' is used throughout this code for readability.
  */
