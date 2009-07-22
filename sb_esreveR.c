@@ -5,7 +5,8 @@
  * Please see the file COPYING in the source
  * distribution of this software for license terms.
  *
- * This LADSPA plugin reverses sections of the given sound.
+ * This LADSPA plugin takes the given sound from the host, and reverses
+ * sub-sections of random length between 0.2 and 1.5 seconds.
  *
  * Thanks to:
  * - Bart Massey of Portland State University (http://web.cecs.pdx.edu/~bart/)
@@ -27,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "ladspa.h"
 
 
@@ -53,6 +55,8 @@
 //--------------------------------
 
 typedef struct {
+	// the sample rate of the block of samples from the host
+	LADSPA_Data sample_rate;
 	// data locations for the input & output audio ports
 	LADSPA_Data * Input;
 	LADSPA_Data * Output;
@@ -68,12 +72,16 @@ typedef struct {
  * This function returns a LADSPA_Handle (which is a void * -- a pointer to
  * anything).
  */
-LADSPA_Handle instantiate_Reverse()
+LADSPA_Handle instantiate_Reverse(const LADSPA_Descriptor * Descriptor,
+											  unsigned long sample_rate)
 {
 	Reverse * reverse;	// for a Reverse struct instance
 	
 	// allocate space for a Reverse struct instance
 	reverse = (Reverse *) malloc(sizeof(Reverse));
+	
+	// set the Reverse instance sample rate value
+	reverse->sample_rate = sample_rate;
 	
 	// send the LADSPA_Handle to the host. If malloc failed, NULL is returned.
 	return reverse;
@@ -104,32 +112,95 @@ void connect_port_to_Reverse(LADSPA_Handle instance, unsigned long Port, LADSPA_
 
 /*
  * Here is where the actual audio manipulation is done.  It takes the sample
- * buffer and reverses the order of the samples.
+ * buffer and reverses sub-blocks of random length between 0.2 seconds and
+ * 1.5 seconds.
  */
-void run_Reverse(LADSPA_Handle instance, unsigned long sample_count)
+void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 {
 	// set local pointer to plugin instance
 	Reverse * reverse = (Reverse *) instance;
 
 	// set local pointers to appropriate sample buffers
-	LADSPA_Data * input = reverse->Input;
-	LADSPA_Data * output = reverse->Output;
-		
-	// set an index into the input buffer starting with the last sample
-	unsigned long index = sample_count - 1;
+	LADSPA_Data * input_reader = reverse->Input;
+	LADSPA_Data * output_writer = reverse->Output;
+	
+	// set the minimum amount of samples to reverse (0.2 seconds of sound)
+	const unsigned long MIN_SAMPLES = 0.2 * reverse->sample_rate;
+	// set the maximum amount of samples to reverse (1.5 seconds of sound)
+	const unsigned long MAX_SAMPLES = 1.5 * reverse->sample_rate;
+	
+	// set a starting position index for the input buffer. This holds the
+	// position at which the next sub-block of samples starts so that
+	// the input index knows where to stop since it traverses backwards through
+	// the input buffer.
+	unsigned long start_position = 0;
 
-	/*
-	 * set the ouput samples to the reverse order of the input samples.
-	 *
-	 * NOTE: since index is an unsigned long integer, when it is equal
-	 * to 0 and then decremented, the value becomes that huge number that
-	 * is represented as 0xFFFFFFFFFFFFFFFF in hex, and not -1, of course.
-	 * Hence, the 'index != 0xFFFFFFFFFFFFFFFF'.
-	 */
-	while (index != 0xFFFFFFFFFFFFFFFF)
+	// set an index for the input reader and output writer
+	unsigned long in_index = 0;
+	unsigned long out_index = 0;
+
+	// break loop when the output index has reached the end of the output buffer
+	while (out_index < total_sample_count)
 	{
-		*(output++) = input[index];
-		--index;
+		// set a random number lower bound
+		unsigned long rand_num_lower_bound = start_position + MIN_SAMPLES;
+		// set a random number upper bound
+		unsigned long rand_num_upper_bound = start_position + MAX_SAMPLES;
+		// a random number to be set later
+		unsigned long random_num = 0;
+		
+		// set the input index to the end of the buffer if the lower bound is
+		// within MIN_SAMPLES of the end of the buffer or if it is beyond the
+		// end of the buffer (this catches the special case where the whole
+		// block past in by the host is shorter than MIN_SAMPLES).
+		if (rand_num_lower_bound >= total_sample_count - MIN_SAMPLES)
+			in_index = total_sample_count - 1;
+		
+		else 
+		{	
+			// set the random number upper bound to the point where the number
+			// of samples left in the buffer is MIN_SAMPLES if the upper bound is
+			// within minimum samples away from the end of the buffer
+			if (rand_num_upper_bound > total_sample_count - MIN_SAMPLES)
+				rand_num_upper_bound = total_sample_count - MIN_SAMPLES;
+			
+			/*
+			* get a random number from a random number generator.
+			*
+			* The purpose of the random number here is to pick a random point in
+			* the input buffer (between the bounds) to which the input reader
+			* will start reading backwards in order to get random sizes of blocks
+			* to reverse.
+			*/
+			// seed the C library's random number generator with the current time
+			srand48 ((unsigned long)(time (NULL)));
+			// get a random number between lower bound and upper bound
+			random_num = rand_num_lower_bound +
+					(lrand48() % (rand_num_upper_bound - rand_num_lower_bound + 1));
+			
+			// set the input index to one less than the random number, because the
+			// start position will become the point at random_num.
+			in_index = random_num - 1;
+		}
+
+		// reverse the block.
+		// NOTE: the test condition 'in_index != 0xFFFFFFFFFFFFFFFF' is for when
+		// the start position is at zero (the beginning of the input buffer).
+		// When 0 is decremented as an unsigned long it becomes that huge
+		// positive number represented in hex as 0xFFFFFFFFFFFFFFFF, which of
+		// course is always going to be greater than 0.	
+		while (in_index >= start_position && in_index != 0xFFFFFFFFFFFFFFFF)
+		{
+			// set the output buffer's value to the appropriate input buffer value
+			output_writer[out_index] = input_reader[in_index];
+			// move forward in the output buffer
+			++out_index;
+			// move backward in the input buffer
+			--in_index;
+		}
+		
+		// reset the start position to the end of the block just reversed
+		start_position = random_num;
 	}
 }
 
