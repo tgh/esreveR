@@ -33,3 +33,43 @@ and not too annoying for the pro's out there.
 
 To install, make sure the LADSPA_PATH variable in the Makefile is correct to your
 environment, and just run (as root) make install.
+
+Here, for no reason, is the pseudo code for the run() function of sb_esreveR.c:
+
+set an input reader to the beginning of the input buffer
+set an output writer to the beginning of output buffer
+set the minimum samples to reverse to 0.2 * the sample rate
+set the maximum samples to reverse to 1.5 * the sample rate
+set a start position to 0
+set an input index to 0
+set an output index to 0
+
+while the output index has not reached the end of the output buffer, do
+   set the random number lower bound to start position + minimum samples
+   set the random number upper bound to start position + maximum samples
+
+   if the random number lower bound is within minimum samples of the end of \
+    the block or beyond the end of the block, then
+      set the input index to one less than the last sample of the block
+   end if
+
+   else, then
+      if the random number upper bound is within minimum samples away \
+       from the end of the block, then
+         set random number upper bound to the end of block minus minimum samples
+      end if
+
+      seed a random number generator with the current time
+      get a random number between the random number lower and upper bounds
+      set the input index to one less than the random number
+   end if
+
+   while the input index is not less than the start position
+      set the output buffer's value at the output index to the input \
+       buffer's value at the input index
+      increment the output index
+      decrement the input index
+   end loop
+
+   set the start position to the random number
+end loop
