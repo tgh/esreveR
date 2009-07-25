@@ -1,15 +1,29 @@
-// Tyler Hayes - CS300 - HW2 - Unit Test Driver
+/*
+ * Tyler Hayes - CS300 - HW2 - Unit Test Driver
+ *
+ * This is a driver for unit testing the run() function of my esreveR LADSPA
+ * plugin.
+ *
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include "ladspa.h"
 
+//---------------------------
+//-- FUNCTION DECLARATIONS --
+//---------------------------
 
 void run_Reverse(LADSPA_Handle instance, unsigned long sample_count);
 
 
-typedef struct {
+//------------------------
+//-- STRUCT DEFINITIONS --
+//------------------------
+
+typedef {
 	LADSPA_Data sample_rate;
 	
 	// data locations for the input & output audio ports
@@ -17,10 +31,21 @@ typedef struct {
 	LADSPA_Data * Output;
 } Reverse;
 
+
+//----------------------
+//-- GLOBAL VARIABLES --
+//----------------------
+
+// to hold the filename passed in by the user through the command line
 char * filename;
 
+
+//----------
+//-- MAIN --
+//----------
 /*
- * takes two arguments, the sample rate and the number of samples
+ * takes three arguments, the sample rate, the number of samples, and
+ * a file name to which the test data will be stored in.
  */
 int main(int argc, char * argv[])
 {
@@ -70,7 +95,7 @@ int main(int argc, char * argv[])
 		sample_val += 1.0f;
 	}
 	
-	// create the output buffer and initialize it to zeroes
+	// create the output buffer and initialize it to all zeroes
 	reverse->Output = malloc(sizeof(LADSPA_Data) * BUFFER_SIZE);
 	if (!reverse->Output)
 	{
@@ -92,7 +117,14 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
-
+//--------------------------
+//-- run_Reverse function --
+//--------------------------
+/*
+ * This is the function that is being unit tested.  It is used in esreveR.c.
+ * Portions of code used for file output for test data storage is sectioned
+ * off for readablilty.  These sections, of course, are not used in esreveR.c.
+ */
 void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 {
 	// set local pointer to plugin instance
@@ -208,3 +240,5 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 	fclose(write_file);
 //-----------------------------------------------------------------------------
 }
+
+// EOF
