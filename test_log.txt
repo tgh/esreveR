@@ -1,0 +1,6 @@
+Test 1: 0 sample rate, 0 samples
+	Result: Expected
+
+Test 2: 44100 sample rate, 8000 samples (audio less than 0.2 seconds)
+	Result: Segmentation Fault
+	Error: Unsigned long underflow
