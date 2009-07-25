@@ -1,0 +1,50 @@
+Tyler Hayes
+HW2, cs300
+July 31, 2009
+Unit Psuedo Code
+
+(This block of psuedo code is for the 'run' routine for my "esreveR" LADSPA
+plugin for cs410)
+
+This is where the actual sound manipulation is performed.  It takes the given
+block of samples and reverses smaller blocks of random sizes between 0.2
+seconds and 1.5 seconds.  If the block sent in is less than 0.2 seconds in
+length, then it is simply reversed.
+
+set an input reader to the beginning of the input buffer
+set an output writer to the beginning of output buffer
+set the minimum samples to reverse to 0.2 * the sample rate
+set the maximum samples to reverse to 1.5 * the sample rate
+set a start position to 0
+set an input index to 0
+set an output index to 0
+
+while the output index has not reached the end of the output buffer, do
+   set the random number lower bound to start position + minimum samples
+   set the random number upper bound to start position + maximum samples
+
+   if the random number lower bound is within minimum samples of the end of \
+    the block or beyond the end of the block, then
+      set the input index to one less than the last sample of the block
+   end if
+
+   else, then
+      if the random number upper bound is within minimum samples away \
+       from the end of the block, then
+         set random number upper bound to the end of block minus minimum samples
+      end if
+
+      seed a random number generator with the current time
+      get a random number between the random number lower and upper bounds
+      set the input index to one less than the random number
+   end if
+
+   while the input index is not less than the start position
+      set the output buffer's value at the output index to the input \
+       buffer's value at the input index
+      increment the output index
+      decrement the input index
+   end loop
+
+   set the start position to the random number
+end loop
