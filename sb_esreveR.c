@@ -19,6 +19,13 @@
  * 
  * NOTE: even though the official name of this plugin is "esreveR", the name
  * 'Reverse' is used throughout this code for readability.
+ * 
+ * Also, I use the terms 'buffer' and 'block' kind of interchangeably in my
+ * comments.  By buffer I mean the array of floating point numbers that
+ * represent the audio samples sent in by the host (the audio program using
+ * the plugin).  By block I just mean a chunk of samples--a sub-section of the
+ * buffer.  Most likey, I sometimes use one term when I mean the other, so sorry
+ * for the confusion.  They pretty much mean the same thing anyway.
  */
 
 
@@ -55,7 +62,7 @@
 //--------------------------------
 
 typedef struct {
-	// the sample rate of the block of samples from the host
+	// the sample rate (samples per second) of the sound from the host
 	LADSPA_Data sample_rate;
 	// data locations for the input & output audio ports
 	LADSPA_Data * Input;
@@ -152,7 +159,7 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 		// set the input index to the end of the buffer if the lower bound is
 		// within MIN_SAMPLES of the end of the buffer or if it is beyond the
 		// end of the buffer (this catches the special case where the whole
-		// block past in by the host is shorter than MIN_SAMPLES).
+		// block passed in by the host is shorter than MIN_SAMPLES).
 		if (rand_num_lower_bound >= total_sample_count - MIN_SAMPLES)
 			in_index = total_sample_count - 1;
 		
@@ -165,13 +172,11 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 				rand_num_upper_bound = total_sample_count - MIN_SAMPLES;
 			
 			/*
-			* get a random number from a random number generator.
-			*
-			* The purpose of the random number here is to pick a random point in
-			* the input buffer (between the bounds) to which the input reader
-			* will start reading backwards in order to get random sizes of blocks
-			* to reverse.
-			*/
+			 * The purpose of the random number here is to pick a random point in
+			 * the input buffer (between the bounds) to which the input reader
+			 * will start reading backwards in order to get random sizes of blocks
+			 * to reverse.
+			 */
 			// seed the C library's random number generator with the current time
 			srand48 ((unsigned long)(time (NULL)));
 			// get a random number between lower bound and upper bound
@@ -184,11 +189,13 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 		}
 
 		// reverse the block.
-		// NOTE: the test condition 'in_index != 0xFFFFFFFFFFFFFFFF' is for when
-		// the start position is at zero (the beginning of the input buffer).
-		// When 0 is decremented as an unsigned long it becomes that huge
-		// positive number represented in hex as 0xFFFFFFFFFFFFFFFF, which of
-		// course is always going to be greater than 0.	
+		/*
+		 * NOTE: the test condition 'in_index != 0xFFFFFFFFFFFFFFFF' is for when
+		 * the start position is at zero (the beginning of the input buffer).
+		 * When 0 is decremented as an unsigned long it becomes that huge
+		 * positive number represented in hex as 0xFFFFFFFFFFFFFFFF, which of
+		 * course is always going to be greater than 0.
+		 */
 		while (in_index >= start_position && in_index != 0xFFFFFFFFFFFFFFFF)
 		{
 			// set the output buffer's value to the appropriate input buffer value
@@ -228,11 +235,9 @@ LADSPA_Descriptor * reverse_descriptor = NULL;
  */
 void _init()
 {
-	/*
-	 * allocate memory for reverse_descriptor (it's just a pointer at this point).
-	 * in other words create an actual LADSPA_Descriptor struct instance that
-	 * reverse_descriptor will point to.
-	 */
+	// allocate memory for reverse_descriptor (it's just a pointer at this point).
+	// in other words create an actual LADSPA_Descriptor struct instance that
+	// reverse_descriptor will point to.
 	reverse_descriptor = (LADSPA_Descriptor *) malloc(sizeof(LADSPA_Descriptor));
 	
 	// make sure malloc worked properly before initializing the struct fields
@@ -241,20 +246,19 @@ void _init()
 		// assign the unique ID of the plugin
 		reverse_descriptor->UniqueID = UNIQUE_ID;
 		
+		// assign the label of the plugin. since there are no control features for this
+		// plugin, "reverse" is fine.
 		/*
-		 * assign the label of the plugin. since there are no control features for this
-		 * plugin, "reverse" is fine. (NOTE: it must not have white spaces as per ladspa.h).
+		 * NOTE: it must not have white spaces as per ladspa.h.
 		 * NOTE: in case you were wondering, strdup() from the string library makes a duplicate
 		 * string of the argument and returns the duplicate's pointer (a char *).
 		 */
 		reverse_descriptor->Label = strdup("esreveR");
 		
-		/*
-		 * assign the special property of the plugin, which is any of the three
-       * defined in ladspa.h: LADSPA_PROPERTY_REALTIME, LADSPA_PROPERTY_INPLACE_BROKEN,
-		 * and LADSPA_PROPERTY_HARD_RT_CAPABLE.  They are just ints (1, 2, and 4,
-		 * respectively).  See ladpsa.h for what they actually mean.
-		 */
+		// assign the special property of the plugin, which is any of the three
+      // defined in ladspa.h: LADSPA_PROPERTY_REALTIME, LADSPA_PROPERTY_INPLACE_BROKEN,
+		// and LADSPA_PROPERTY_HARD_RT_CAPABLE.  They are just ints (1, 2, and 4,
+		// respectively).  See ladpsa.h for what they actually mean.
 		reverse_descriptor->Properties = LADSPA_PROPERTY_HARD_RT_CAPABLE;
 		
 		// assign the plugin name
@@ -263,16 +267,12 @@ void _init()
 		// assign the author of the plugin
 		reverse_descriptor->Maker = strdup("Tyler Hayes");
 		
-		/*
-		 * assign the copyright info of the plugin (NOTE: use "None" for no copyright
-		 * as per ladspa.h)
-		 */
+		// assign the copyright info of the plugin (NOTE: use "None" for no copyright
+		// as per ladspa.h)
 		reverse_descriptor->Copyright = strdup("GPL");
 		
-		/*
-		 * assign the number of ports for the plugin.  since there are no control
-		 * features for Reverse, there are only 2 ports: audio input and output.
-		 */
+		// assign the number of ports for the plugin.  since there are no control
+		// features for Reverse, there are only 2 ports: audio input and output.
 		reverse_descriptor->PortCount = PORT_COUNT;
 		
 		LADSPA_PortDescriptor * temp_descriptor_array;	// used for allocating and initailizing a
@@ -283,31 +283,22 @@ void _init()
 		// allocate space for the temporary array with a length of the number of ports (PortCount)
 		temp_descriptor_array = (LADSPA_PortDescriptor *) calloc(PORT_COUNT, sizeof(LADSPA_PortDescriptor));
 		
-		/*
-		* set the instance LADSPA_PortDescriptor array (PortDescriptors) pointer to
-		* the location temp_descriptor_array is pointing at.
-		*/
+		// set the instance LADSPA_PortDescriptor array (PortDescriptors) pointer to
+		// the location temp_descriptor_array is pointing at.
 		reverse_descriptor->PortDescriptors = (const LADSPA_PortDescriptor *) temp_descriptor_array;
 		
-		/*
-		 * set the port properties by ORing specific bit masks defined in ladspa.h.
-		 *
-		 * this first one gives the first port the properties that tell the host that
-		 * this port takes input and is an audio port (not a control port).
-		 */
+		// set the port properties by ORing specific bit masks defined in ladspa.h.
+		// this first one gives the first port the properties that tell the host that
+		// this port takes input and is an audio port (not a control port).
 		temp_descriptor_array[REVERSE_INPUT] = LADSPA_PORT_INPUT | LADSPA_PORT_AUDIO;
 		
-		/*
-		 * this gives the second port the properties that tell the host that this port is
-		 * an output port and that it is an audio port (I don't see any situation where
-		 * one might be an output port, but not an audio port...).
-		 */
+		// this gives the second port the properties that tell the host that this port is
+		// an output port and that it is an audio port (I don't see any situation where
+		// one might be an output port, but not an audio port...).
 		temp_descriptor_array[REVERSE_OUTPUT] = LADSPA_PORT_OUTPUT | LADSPA_PORT_AUDIO;
 		
-		/*
-		 * set temp_descriptor_array to NULL for housekeeping--we don't need that local
-		 * variable anymore.
-		 */
+		// set temp_descriptor_array to NULL for housekeeping--we don't need that local
+		// variable anymore.
 		temp_descriptor_array = NULL;
 		
 		char ** temp_port_names;	// temporary local variable (which is a pointer to an array
@@ -317,10 +308,8 @@ void _init()
 		// allocate the space for two port names
 		temp_port_names = (char **) calloc(PORT_COUNT, sizeof(char *));
 		
-		/*
-		* set the instance PortNames array pointer to the location temp_port_names
-		* is pointing at.
-		*/
+		// set the instance PortNames array pointer to the location temp_port_names
+		// is pointing at.
 		reverse_descriptor->PortNames = (const char **) temp_port_names;
 		
 		// set the name of the input port
@@ -339,16 +328,12 @@ void _init()
 		// allocate space for two port hints (see ladspa.h for info on 'hints')									
 		temp_hints = (LADSPA_PortRangeHint *) calloc(PORT_COUNT, sizeof(LADSPA_PortRangeHint));
 		
-		/*
-		* set the instance PortRangeHints pointer to the location temp_hints
-		* is pointed at.
-		*/
+		// set the instance PortRangeHints pointer to the location temp_hints
+		// is pointed at.
 		reverse_descriptor->PortRangeHints = (const LADSPA_PortRangeHint *) temp_hints;
 		
-		/*
-		 * set the port hint descriptors (which are ints). Since this is a simple
-		 * reverse effect, input and ouput don't need any range hints.
-		 */
+		// set the port hint descriptors (which are ints). Since this is a simple
+		// reverse effect, input and ouput don't need any range hints.
 		temp_hints[REVERSE_INPUT].HintDescriptor = 0;
 		temp_hints[REVERSE_OUTPUT].HintDescriptor = 0;
 		
