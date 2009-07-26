@@ -27,7 +27,8 @@ Test 8: 48000 sample rate, 240000 samples (a normal example: 48kHz, 5s)
 			  next three sub-blocks equal in length
 	Error: Unknown. Bad random number generator?  Bad seed, or seeded the same
 			 in loop?  TEST AGAIN:
-	Result: Passed, but error noted as bothersome/to be looked into.
+	Result: Passed, but error noted as bothersome/to be looked into.  TEST 9.
+	-------
 	Fix: Added a better seed algorithm using timeval with nanoseconds
 	Result: Passed.  TEST AGAIN:
 	Result: Passed
@@ -38,4 +39,4 @@ Test 9: 192000 sample rate, 2880000 samples (a very high example: 192kHz, 15s)
 			 numbers are generated in a loop that executes faster than a second,
 			 the seed is the same, and thus the random number is the same.
 	Fix: Added a better seed algorithm using timeval with nanoseconds
-	Result: 
+	Result: Random numbers differ, but they're favored towards upper bound
