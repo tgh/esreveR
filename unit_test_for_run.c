@@ -23,7 +23,7 @@ void run_Reverse(LADSPA_Handle instance, unsigned long sample_count);
 //-- STRUCT DEFINITIONS --
 //------------------------
 
-typedef {
+typedef struct {
 	LADSPA_Data sample_rate;
 	
 	// data locations for the input & output audio ports
@@ -175,8 +175,9 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 		// set the input index to the end of the buffer if the lower bound is
 		// within MIN_SAMPLES of the end of the buffer or if it is beyond the
 		// end of the buffer (this catches the special case where the whole
-		// block past in by the host is shorter than MIN_SAMPLES).
-		if (rand_num_lower_bound >= total_sample_count - MIN_SAMPLES)
+		// block passed in by the host is shorter than MIN_SAMPLES).
+		if (MIN_SAMPLES >= total_sample_count
+			 || rand_num_lower_bound >= total_sample_count - MIN_SAMPLES)
 			in_index = total_sample_count - 1;
 		
 		else 
@@ -194,9 +195,14 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 			 * the input buffer (between the bounds) to which the input reader
 			 * will start reading backwards in order to get random sizes of blocks
 			 * to reverse.
+			 *
+			 * Seeding code referenced to Guy Rutenberg
+			 * (http://www.guyrutenberg.com/2007/09/03/seeding-srand/)
 			 */
 			// seed the C library's random number generator with the current time
-			srand48 ((unsigned long)(time (NULL)));
+			struct timeval current_time;
+			gettimeofday(&current_time, NULL);
+			srand48 ((unsigned long)(current_time.tv_usec * current_time.tv_sec));
 			// get a random number between lower bound and upper bound
 			random_num = rand_num_lower_bound +
 					(lrand48() % (rand_num_upper_bound - rand_num_lower_bound + 1));

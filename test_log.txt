@@ -1,6 +1,41 @@
 Test 1: 0 sample rate, 0 samples
-	Result: Expected
+	Result: Passed
 
-Test 2: 44100 sample rate, 8000 samples (audio less than 0.2 seconds)
+Test 2: 44100 sample rate, 8000 samples (audio shorter than 0.2 seconds)
 	Result: Segmentation Fault
 	Error: Unsigned long underflow
+	Fix: Added additional conditional to if statement
+	Result: Passed
+
+Test 3: 44100 sample rate, 30000 samples (audio longer than 0.2s, shorter than 1.5s)
+	Result: Passed
+
+Test 4: 44100 sample rate, 8820 samples (audio equal to 0.2s)
+	Result: Passed
+
+Test 5: 44100 sample rate, 66150 samples (audio equal to 1.5s)
+	Result: Passed
+
+Test 6: 44100 sample rate, 8821 samples (one sample longer than 0.2s)
+	Result: Passed
+
+Test 7: 44100 sample rate, 66151 samples (one sample longer than 1.5s)
+	Result: Passed
+
+Test 8: 48000 sample rate, 240000 samples (a normal example: 48kHz, 5s)
+	Result: Unacceptable randomness, first two sub-blocks equal in length, then
+			  next three sub-blocks equal in length
+	Error: Unknown. Bad random number generator?  Bad seed, or seeded the same
+			 in loop?  TEST AGAIN:
+	Result: Passed, but error noted as bothersome/to be looked into.
+	Fix: Added a better seed algorithm using timeval with nanoseconds
+	Result: Passed.  TEST AGAIN:
+	Result: Passed
+
+Test 9: 192000 sample rate, 2880000 samples (a very high example: 192kHz, 15s)
+	Result: Unacceptable randomness, many successive blocks equal in length
+	Error: Random number generator seeded in seconds, and since the random
+			 numbers are generated in a loop that executes faster than a second,
+			 the seed is the same, and thus the random number is the same.
+	Fix: Added a better seed algorithm using timeval with nanoseconds
+	Result: 
