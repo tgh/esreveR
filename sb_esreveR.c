@@ -127,6 +127,34 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 	// set local pointer to plugin instance
 	Reverse * reverse = (Reverse *) instance;
 
+	/*
+	 * NOTE: these special cases should never happen, but you never know--like
+	 * if someone is developing a host program and it has some bugs in it, it
+	 * might pass some bad data.
+	 */
+	if (total_sample_count <= 1)
+	{
+		printf("\nEither 0 or 1 sample(s) were passed into the plugin.\n");
+		printf("\nPlugin not executed.\n");
+		return;
+	}
+	if (!reverse)
+	{
+		printf("\nPlugin received NULL pointer for plugin instance.\n");
+		printf("\nPlugin not executed.\n");
+		return;
+	}
+	// with a sample rate of anything less than 10, a sub-block could be of
+	// length 0 or 1, which does nothing when reversed.  Hence, the condition
+	// of the sample rate being at least 10 (a sub-block of at least 2 samples).
+	if (reverse->sample_rate < 10)
+	{
+		printf("\nThis plugin does not accept sample rates less than 10 samples");
+		printf(" per second.\n");
+		printf("\nPlugin not executed.\n");
+		return;
+	}
+
 	// set local pointers to appropriate sample buffers
 	LADSPA_Data * input_reader = reverse->Input;
 	LADSPA_Data * output_writer = reverse->Output;
@@ -145,7 +173,7 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 	// set an index for the input reader and output writer
 	unsigned long in_index = 0;
 	unsigned long out_index = 0;
-
+	
 	// break loop when the output index has reached the end of the output buffer
 	while (out_index < total_sample_count)
 	{
@@ -160,7 +188,8 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 		// within MIN_SAMPLES of the end of the buffer or if it is beyond the
 		// end of the buffer (this catches the special case where the whole
 		// block passed in by the host is shorter than MIN_SAMPLES).
-		if (rand_num_lower_bound >= total_sample_count - MIN_SAMPLES)
+		if (MIN_SAMPLES >= total_sample_count
+			 || rand_num_lower_bound >= total_sample_count - MIN_SAMPLES)
 			in_index = total_sample_count - 1;
 		
 		else 
@@ -172,34 +201,51 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 				rand_num_upper_bound = total_sample_count - MIN_SAMPLES;
 			
 			/*
+			 * get a random number from a random number generator.
+			 *
 			 * The purpose of the random number here is to pick a random point in
 			 * the input buffer (between the bounds) to which the input reader
 			 * will start reading backwards in order to get random sizes of blocks
 			 * to reverse.
 			 */
-			// seed the C library's random number generator with the current time
-			srand48 ((unsigned long)(time (NULL)));
-			// get a random number between lower bound and upper bound
-			random_num = rand_num_lower_bound +
-					(lrand48() % (rand_num_upper_bound - rand_num_lower_bound + 1));
+			// get the current time to seed the generator
+			struct timeval current_time;
+			gettimeofday(&current_time, NULL);
+
+			/*
+			 * This next line uses a random number generator by Richard Brent.
+			 * (http://wwwmaths.anu.edu.au/~brent/random.html)
+			 * which is licensed under the GNU Public License v2.
+			 * See xorgens.c and xorgens.h for the source code.  Many thanks
+			 * to Richard Brent.
+			 *
+			 * NOTE: the tv_sec and tv_usec members of the timeval struct are
+			 * long integers that represent the current time in seconds and
+			 * nanoseconds, respectively, since Jan. 1, 1970.  They are used
+			 * here to seed the generator.  The generator is called with
+			 * xor4096i(), which, unlike the C standard generator, is seeded
+			 * and returns a number with the same call.
+			 */
+			random_num = rand_num_lower_bound
+					+ (xor4096i((unsigned long)(current_time.tv_usec * current_time.tv_sec))
+					% (rand_num_upper_bound - rand_num_lower_bound + 1));
 			
 			// set the input index to one less than the random number, because the
 			// start position will become the point at random_num.
 			in_index = random_num - 1;
 		}
-
+		
 		// reverse the block.
-		/*
-		 * NOTE: the test condition 'in_index != 0xFFFFFFFFFFFFFFFF' is for when
-		 * the start position is at zero (the beginning of the input buffer).
-		 * When 0 is decremented as an unsigned long it becomes that huge
-		 * positive number represented in hex as 0xFFFFFFFFFFFFFFFF, which of
-		 * course is always going to be greater than 0.
-		 */
+		// NOTE: the test condition 'in_index != 0xFFFFFFFFFFFFFFFF' is for when
+		// the start position is at zero (the beginning of the input buffer).
+		// When 0 is decremented as an unsigned long it becomes that huge
+		// positive number represented in hex as 0xFFFFFFFFFFFFFFFF, which of
+		// course is always going to be greater than 0.	
 		while (in_index >= start_position && in_index != 0xFFFFFFFFFFFFFFFF)
 		{
 			// set the output buffer's value to the appropriate input buffer value
 			output_writer[out_index] = input_reader[in_index];
+			
 			// move forward in the output buffer
 			++out_index;
 			// move backward in the input buffer
