@@ -53,4 +53,102 @@ Test 11: 48000 sample rate, 480000 samples (48kHz, 10s)
 
 Test 12: 44100 sample rate, 529200 samples (44.1kHz, 12s)
 	Result: Passed, good randomness
+
+----------------------------------------------
+Added early return if sample count less than 2
+----------------------------------------------
+
+Test 13: 0 sample rate, 0 samples
+	Result: Passed
+
+Test 14: 8000 sample rate, 0 samples
+	Result: Passed
+
+Test 15: 8000 sample rate, 1 sample
+	Result: Passed
 	
+Test 16: 16000 sample rate, 0 samples
+	Result: Passed
+
+Test 17: 16000 sample rate, 1 sample
+	Result: Passed
+
+Test 18: 20050 sample rate, 0 samples
+	Result: Passed
+
+Test 19: 20050 sample rate, 1 sample
+	Result: Passed
+
+Test 20: 44100 sample rate, 0 samples
+	Result: Passed
+
+Test 21: 44100 sample rate, 1 sample
+	Result: Passed
+
+Test 22: 48000 sample rate, 0 samples
+	Result: Passed
+
+Test 23: 48000 sample rate, 1 sample
+	Result: Passed
+
+Test 24: 96000 sample rate, 0 samples
+	Result: Passed
+
+Test 25: 96000 sample rate, 1 sample
+	Result: Passed
+
+Test 26: 192000 sample rate, 0 samples
+	Result: Passed
+
+Test 27: 192000 sample rate, 1 sample
+	Result: Passed
+
+Test 28: 0 sample rate, 2 samples
+	Result: Hung
+	Error: Infinite loop
+	Fix: Added early return for 0 sample rate
+	Result: Passed
+
+Test 29: 1 sample rate, 2 samples
+	Result: Passed, but has 6 sub-blocks, 4 of which are 0 samples in length.
+			  Error?
+	Fix: Added early return if sample rate is less than 10
+	Result: Passed
+
+Test 30: 1 sample rate, 600 samples
+	Result: Passed, but over 1200 sub-blocks with either 0 or 1 samples in length.
+			  Error?
+	Fix: Added early return if sample rate is less than 10
+	Result: Passed
+
+Test 31: 10 sample rate, 3000 samples
+	Result: Passed
+
+Test 32: 9 sample rate, 3000 samples
+	Result: Passed
+
+Test 33: 8 sample rate, 3000 samples
+	Result: Passed
+
+Test 34: 7 sample rate, 3000 samples
+	Result: Passed
+
+Test 35: 6 sample rate, 3000 samples
+	Result: Passed
+
+Test 36: 5 sample rate, 3000 samples
+	Result: Passed
+
+Test 37: 4 sample rate, 3000 samples
+	Result: Passed
+
+Test 38: 3 sample rate, 3000 samples
+	Result: Passed
+
+Test 39: 2 sample rate, 3000 samples
+	Result: Passed
+
+Test 40: 1 sample rate, 3000 samples
+	Result: Passed
+
+

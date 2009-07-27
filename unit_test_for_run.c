@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-//#include "xorgens.h"
 #include "ladspa.h"
 
 //---------------------------
@@ -128,19 +127,36 @@ int main(int argc, char * argv[])
  */
 void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 {
-	// just return if one sample or no samples are passed in.
-	// NOTE: this should never happen, but you never know--like if someone is
-	// developing a host program and it has some bugs in it, it might pass some
-	// bad data.
+	// set local pointer to plugin instance
+	Reverse * reverse = (Reverse *) instance;
+
+	/*
+	 * NOTE: these special cases should never happen, but you never know--like
+	 * if someone is developing a host program and it has some bugs in it, it
+	 * might pass some bad data.
+	 */
 	if (total_sample_count <= 1)
 	{
 		printf("\nEither 0 or 1 sample(s) were passed into the plugin.\n");
 		printf("\nPlugin not executed.\n");
 		return;
 	}
-
-	// set local pointer to plugin instance
-	Reverse * reverse = (Reverse *) instance;
+	if (!reverse)
+	{
+		printf("\nPlugin received NULL pointer for plugin instance.\n");
+		printf("\nPlugin not executed.\n");
+		return;
+	}
+	// with a sample rate of anything less than 10, a sub-block could be of
+	// length 0 or 1, which does nothing when reversed.  Hence, the condition
+	// of the sample rate being at least 10 (a sub-block of at least 2 samples).
+	if (reverse->sample_rate < 10)
+	{
+		printf("\nThis plugin does not accept sample rates less than 10 samples");
+		printf(" per second.\n");
+		printf("\nPlugin not executed.\n");
+		return;
+	}
 
 	// set local pointers to appropriate sample buffers
 	LADSPA_Data * input_reader = reverse->Input;
