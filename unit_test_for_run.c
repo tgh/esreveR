@@ -1,7 +1,7 @@
 /*
  * Tyler Hayes - CS300 - HW2 - Unit Test Driver
  *
- * This is a driver for unit testing the run() function of my esreveR LADSPA
+ * This is a driver for unit testing the run() function of my 'esreveR' LADSPA
  * plugin.
  *
  */

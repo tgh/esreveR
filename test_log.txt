@@ -151,4 +151,32 @@ Test 39: 2 sample rate, 3000 samples
 Test 40: 1 sample rate, 3000 samples
 	Result: Passed
 
+Test 41: 48000 sample rate, 96000 samples (48kHz, 2s)
+	Result: Passed
 
+Test 42: 96000 sample rate, 312000 samples (96kHz, 3.5)
+	Result: Passed
+
+Test 43: 44100 sample rate, 77072 samples (44.1kHz, 1.748s)
+	Result: Passed
+
+Test 44: 37426 sample rate, 89765 samples (random example)
+	Result: Passed, random number a little biased towards both bounds...
+
+Test 45: 28788 sample rate, 233337 samples (random example)
+	Result: Passed
+
+Test 46: 111111 sample rate, 55555 samples (random example)
+	Result: Passed
+
+Test 47: 99999 sample rate, 666666 samples (random example)
+	Result: Passed
+
+Test 48: 2345 sample rate, 2345 sample (random but equal example)
+	Result: Passed
+
+Test 49: 748 sample rate, 391847 samples (random example)
+	Result: Passed
+
+Test 50: 44200 sample rate, 13260 samples (44.2kHz, 0.3s)
+	Result: Passed
