@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+//#include "xorgens.h"
 #include "ladspa.h"
 
 //---------------------------
@@ -160,6 +161,7 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 
 	fprintf(write_file, "Sample Rate: %f", reverse->sample_rate);
 	fprintf(write_file, "\nSample Count: %ld", total_sample_count);
+	fprintf(write_file, "\nSub-block sample sizes:");
 //-----------------------------------------------------------------------------
 	
 	// break loop when the output index has reached the end of the output buffer
@@ -195,17 +197,28 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 			 * the input buffer (between the bounds) to which the input reader
 			 * will start reading backwards in order to get random sizes of blocks
 			 * to reverse.
-			 *
-			 * Seeding code referenced to Guy Rutenberg
-			 * (http://www.guyrutenberg.com/2007/09/03/seeding-srand/)
 			 */
-			// seed the C library's random number generator with the current time
+			// get the current time to seed the generator
 			struct timeval current_time;
 			gettimeofday(&current_time, NULL);
-			srand48 ((unsigned long)(current_time.tv_usec * current_time.tv_sec));
-			// get a random number between lower bound and upper bound
-			random_num = rand_num_lower_bound +
-					(lrand48() % (rand_num_upper_bound - rand_num_lower_bound + 1));
+
+			/*
+			 * This next line uses a random number generator by Richard Brent.
+			 * (http://wwwmaths.anu.edu.au/~brent/random.html)
+			 * which is licensed under the GNU Public License v2.
+			 * See xorgens.c and xorgens.h for the source code.  Many thanks
+			 * to Richard Brent.
+			 *
+			 * NOTE: the tv_sec and tv_usec members of the timeval struct are
+			 * long integers that represent the current time in seconds and
+			 * nanoseconds, respectively, since Jan. 1, 1970.  They are used
+			 * here to seed the generator.  The generator is called with
+			 * xor4096i(), which, unlike the C standard generator, is seeded
+			 * and returns a number with the same call.
+			 */
+			random_num = rand_num_lower_bound
+					+ (xor4096i((unsigned long)(current_time.tv_usec * current_time.tv_sec))
+					% (rand_num_upper_bound - rand_num_lower_bound + 1));
 			
 			// set the input index to one less than the random number, because the
 			// start position will become the point at random_num.
@@ -213,8 +226,7 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 		}
 
 //-----------------WRITE NUMBER OF SAMPLES REVERSED----------------------------
-		fprintf(write_file, "\n\nSub-block length: %ld samples", in_index - start_position + 1);
-		fprintf(write_file, "\nValues:\n");
+		fprintf(write_file, "\n%ld", in_index - start_position + 1);
 //-----------------------------------------------------------------------------
 		
 		// reverse the block.
@@ -227,10 +239,6 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 		{
 			// set the output buffer's value to the appropriate input buffer value
 			output_writer[out_index] = input_reader[in_index];
-			
-//--------------WRITING RESULT TO TEST FILE------------------------------------
-			fprintf(write_file, "\t%f\n", output_writer[out_index]);
-//-----------------------------------------------------------------------------
 			
 			// move forward in the output buffer
 			++out_index;

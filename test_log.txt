@@ -40,3 +40,17 @@ Test 9: 192000 sample rate, 2880000 samples (a very high example: 192kHz, 15s)
 			 the seed is the same, and thus the random number is the same.
 	Fix: Added a better seed algorithm using timeval with nanoseconds
 	Result: Random numbers differ, but they're favored towards upper bound
+
+---------------------------------------
+Implemented new random number generator
+---------------------------------------
+
+Test 10: 48000 sample rate, 240000 samples (normal example: 48kHz, 5s)
+	Result: Passed, better randomness
+
+Test 11: 48000 sample rate, 480000 samples (48kHz, 10s)
+	Result: Passed, good randomness
+
+Test 12: 44100 sample rate, 529200 samples (44.1kHz, 12s)
+	Result: Passed, good randomness
+	
