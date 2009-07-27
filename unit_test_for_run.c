@@ -128,6 +128,17 @@ int main(int argc, char * argv[])
  */
 void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 {
+	// just return if one sample or no samples are passed in.
+	// NOTE: this should never happen, but you never know--like if someone is
+	// developing a host program and it has some bugs in it, it might pass some
+	// bad data.
+	if (total_sample_count <= 1)
+	{
+		printf("\nEither 0 or 1 sample(s) were passed into the plugin.\n");
+		printf("\nPlugin not executed.\n");
+		return;
+	}
+
 	// set local pointer to plugin instance
 	Reverse * reverse = (Reverse *) instance;
 
