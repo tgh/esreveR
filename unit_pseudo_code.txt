@@ -11,6 +11,9 @@ block of samples and reverses smaller blocks of random sizes between 0.2
 seconds and 1.5 seconds.  If the block sent in is less than 0.2 seconds in
 length, then it is simply reversed.
 
+if the total sample count is less than or equal to 1, then
+	return
+
 set an input reader to the beginning of the input buffer
 set an output writer to the beginning of output buffer
 set the minimum samples to reverse to 0.2 * the sample rate
