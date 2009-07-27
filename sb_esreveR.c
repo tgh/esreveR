@@ -12,6 +12,8 @@
  * - Bart Massey of Portland State University (http://web.cecs.pdx.edu/~bart/)
  *   for his direct help
  * - Richard Furse (http://www.muse.demon.co.uk/) for his examples
+ * - Richard Brent (http://wwwmaths.anu.edu.au/~brent/random.html) for his
+ *   uniform random number generator
  * - David Benson (http://gdam.ffem.org/ladspa-doc/ladspa.html) for his
  *   tutorial
  * - Dave Phillips (http://gdam.ffem.org/ladspa-doc/ladspa.html) for his
@@ -35,7 +37,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+#include <sys/time.h>
+#include "xorgens.h"
 #include "ladspa.h"
 
 
@@ -213,7 +216,7 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 			gettimeofday(&current_time, NULL);
 
 			/*
-			 * This next line uses a random number generator by Richard Brent.
+			 * This next line uses a uniform random number generator by Richard Brent.
 			 * (http://wwwmaths.anu.edu.au/~brent/random.html)
 			 * which is licensed under the GNU Public License v2.
 			 * See xorgens.c and xorgens.h for the source code.  Many thanks
@@ -308,7 +311,7 @@ void _init()
 		reverse_descriptor->Properties = LADSPA_PROPERTY_HARD_RT_CAPABLE;
 		
 		// assign the plugin name
-		reverse_descriptor->Name = strdup("esreveR");
+		reverse_descriptor->Name = strdup("esreveR (Random Reversal)");
 		
 		// assign the author of the plugin
 		reverse_descriptor->Maker = strdup("Tyler Hayes");

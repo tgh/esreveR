@@ -19,10 +19,10 @@ CC	=	gcc
 CFLAGS	=	-Wall -O3 -fPIC
 LDFLAGS =	-nostartfiles -shared -Wl,-Bsymbolic # -lc -lm -lrt -lpthread
 
-LADSPA_PATH =	/usr/lib/ladspa		# change these 2 variables to match
+LADSPA_PATH =	/usr/lib/ladspa	# change these 2 variables to match
 UNINSTALL = /usr/lib/ladspa/sb_*	# your LADSPA_PATH environment
-					# variable (type 'echo $LADSPA_PATH'
-					# at your shell prompt)
+											# variable (type 'echo $LADSPA_PATH'
+											# at your shell prompt)
 
 PLUGINS	=	sb_esreveR.so
 

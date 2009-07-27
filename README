@@ -13,7 +13,8 @@ blocks of samples rather than the whole sound file.
 So this plugin takes each block of samples sent by the host, and reverses sub-blocks
 of random sizes (between 0.2 and 1.5 seconds).  Probably not much practical use for
 the average person, but more of a random effect for those like me who like to create
-weird and new sounds.
+weird and new sounds.  Also note that if the sound file is in stereo, each channel is
+done seperately, so they will be out of synch so to speak.
 
 The name esreveR is just Reverse backwards if you didn't already catch that.
 
