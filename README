@@ -18,9 +18,9 @@ done seperately, so they will be out of synch so to speak.
 
 The name esreveR is just Reverse backwards if you didn't already catch that.
 
-It is written in C with much help from Bart Massey, Tom Szilagyi, David Benson,
-Dave Phillips, and Richard Furse--the source file(s) provide the official
-thanks and acknowledgements.
+It is written in C with much help from Bart Massey, Richard Brent, Tom Szilagyi,
+David Benson, Dave Phillips, and Richard Furse--the source file(s) provide the
+official thanks and acknowledgements in their respective headers.
 
 This plug-in can be used with any audio program that supports LADSPA plug-ins.
 See your favorite audio program's specifications to see if it supports LADSPA
