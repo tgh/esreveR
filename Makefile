@@ -6,7 +6,9 @@
 # distribution of this software for license terms.
 #
 # Thanks to Tom Szilagyi (http://tap-plugins.sourceforge.net/)
-# for his Makefile as an example for me.
+# for his Makefile as an example for me.  Also special thanks
+# to Bart Massey (http://web.cecs.pdx.edu/~bart/) for his help
+# in getting the correct flags for creating the shared object.
 #
 # NOTE: since LADSPA_PATH varies depending on your distro,
 # you must change the LADSPA_PATH variable and UNINSTALL
