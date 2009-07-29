@@ -314,7 +314,7 @@ void _init()
 		reverse_descriptor->Name = strdup("esreveR (Random Reversal)");
 		
 		// assign the author of the plugin
-		reverse_descriptor->Maker = strdup("Tyler Hayes");
+		reverse_descriptor->Maker = strdup("Tyler Hayes (tgh@pdx.edu)");
 		
 		// assign the copyright info of the plugin (NOTE: use "None" for no copyright
 		// as per ladspa.h)
