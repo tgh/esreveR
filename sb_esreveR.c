@@ -60,6 +60,14 @@
 #define PORT_COUNT 2
 
 
+//-------------------------
+//-- FUNCTION PROTOTYPES --
+//-------------------------
+
+// gets a random unsigned long integer
+unsigned long GetRandomNaturalNumber(unsigned long lower_bound, unsigned long upper_bound);
+
+
 //--------------------------------
 //-- STRUCT FOR PORT CONNECTION --
 //--------------------------------
@@ -211,27 +219,7 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 			 * will start reading backwards in order to get random sizes of blocks
 			 * to reverse.
 			 */
-			// get the current time to seed the generator
-			struct timeval current_time;
-			gettimeofday(&current_time, NULL);
-
-			/*
-			 * This next line uses a uniform random number generator by Richard Brent.
-			 * (http://wwwmaths.anu.edu.au/~brent/random.html)
-			 * which is licensed under the GNU Public License v2.
-			 * See xorgens.c and xorgens.h for the source code.  Many thanks
-			 * to Richard Brent.
-			 *
-			 * NOTE: the tv_sec and tv_usec members of the timeval struct are
-			 * long integers that represent the current time in seconds and
-			 * nanoseconds, respectively, since Jan. 1, 1970.  They are used
-			 * here to seed the generator.  The generator is called with
-			 * xor4096i(), which, unlike the C standard generator, is seeded
-			 * and returns a number with the same call.
-			 */
-			random_num = rand_num_lower_bound
-					+ (xor4096i((unsigned long)(current_time.tv_usec * current_time.tv_sec))
-					% (rand_num_upper_bound - rand_num_lower_bound + 1));
+			random_num = GetRandomNaturalNumber(rand_num_lower_bound, rand_num_upper_bound);
 			
 			// set the input index to one less than the random number, because the
 			// start position will become the point at random_num.
@@ -442,4 +430,36 @@ void _fini()
 	}
 }
 
-// EOF
+//-----------------------------------------------------------------------------
+
+/*
+ * This function uses Richard Brent's uniform random number generator (see
+ * comments in the function) to get a random unsigned long integer.  It is
+ * seeded with the current time's seconds and nanoseconds.
+ */
+unsigned long GetRandomNaturalNumber(unsigned long lower_bound, unsigned long upper_bound)
+{
+	// get the current time to seed the generator
+	struct timeval current_time;
+	gettimeofday(&current_time, NULL);
+
+	/*
+	 * This next line uses a uniform random number generator by Richard Brent.
+	 * (http://wwwmaths.anu.edu.au/~brent/random.html)
+	 * which is licensed under the GNU Public License v2.
+	 * See xorgens.c and xorgens.h for the source code.  Many thanks
+	 * to Richard Brent.
+	 *
+	 * NOTE: the tv_sec and tv_usec members of the timeval struct are
+	 * long integers that represent the current time in seconds and
+	 * nanoseconds, respectively, since Jan. 1, 1970.  They are used
+	 * here to seed the generator.  The generator is called with
+	 * xor4096i(), which, unlike the C standard generator, is seeded
+	 * and returns a number with the same call.
+	 */
+	return lower_bound
+			 + (xor4096i((unsigned long)(current_time.tv_usec * current_time.tv_sec))
+			 % (upper_bound - lower_bound + 1));
+}
+
+//---------------------------------- EOF --------------------------------------
