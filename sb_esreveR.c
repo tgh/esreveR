@@ -145,7 +145,8 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 	 */
 	if (total_sample_count <= 1)
 	{
-		printf("\nEither 0 or 1 sample(s) were passed into the plugin.\n");
+		printf("\nEither 0, 1, or a negative numer of sample(s) were passed into");
+		printf(" the plugin.\n");
 		printf("\nPlugin not executed.\n");
 		return;
 	}
