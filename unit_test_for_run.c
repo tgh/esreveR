@@ -183,7 +183,7 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
 	write_file = fopen(filename, "w");
 	if (!write_file)
 	{
-		printf("\n**Error: fail to create file 'test_results.txt'\n");
+		printf("\n**Error: fail to create file %s\n", filename);
 		return;
 	}
 
