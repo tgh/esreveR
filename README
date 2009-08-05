@@ -20,15 +20,11 @@ sub-blocks of random sizes (between 0.2 and 1.5 seconds).  Probably not much
 practical use for the average person, but more of a random effect for those like
 me who like to create weird and new sounds.
 
-IMPORTANT NOTE: for those learning how to use LADSPA and/or this plugin, take
-note at how the host executes the plugin for a stereo sound file: for each block
-of audio, it passes the left channel into run(), followed by the right channel
-into run() (might be the opposite for some hosts--I was using Audacity to test
-it out).  This is important because for plugins like this one where randomness
-is a factor, each channel will have noticeably different results.  Which is cool
-when you want an abstract, weird, random effect like this one, but not cool if
-you want each channel to be done the same, like your standard reverb or what
-have you.
+IMPORTANT NOTE: this plugin does not account for left/right channels, which
+means that the channels will have different results--in other words, different
+radnomness.  This is cool when you want an abstract, weird, random effect like
+this one, but not cool if you want each channel to be done the same, like your
+standard reverb or what have you.
 
 The name esreveR is just Reverse backwards if you didn't already catch that.
 
