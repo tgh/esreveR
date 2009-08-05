@@ -1,6 +1,10 @@
 ESREVER (part of the StudioBlood LADSPA plugin package, hence the sb_ prefix)
--------
-July 20, 2009. Tyler Hayes. Portland, OR.
+COPYRIGHT (c)2009. Tyler Hayes. Portland, OR. July 20, 2009.
+ALL RIGHTS RESERVED.
+
+This plugin is licensed under the GPL v3.
+
+--------
 
 esreveR is an audio plug-in using LADSPA (Linux Audio Developers Simple
 Programming API). My first idea for a LADSPA plugin was to simply take a sound
