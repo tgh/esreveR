@@ -16,8 +16,8 @@
  *   uniform random number generator
  * - David Benson (http://gdam.ffem.org/ladspa-doc/ladspa.html) for his
  *   tutorial
- * - Dave Phillips (http://gdam.ffem.org/ladspa-doc/ladspa.html) for his
- *   ladspa information
+ * - Dave Phillips(http://linuxdevcenter.com/pub/a/linux/2001/02/02/ladspa.html)
+ *   for his ladspa information
  * 
  * NOTE: even though the official name of this plugin is "esreveR", the name
  * 'Reverse' is used throughout this code for readability.
