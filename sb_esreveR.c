@@ -262,7 +262,7 @@ void cleanup_Reverse(LADSPA_Handle instance)
 
 //-----------------------------------------------------------------------------
 
-// global LADSPA_Descriptor used by _init(), _fini(), and ladpsa_descriptor()
+// global LADSPA_Descriptor used by _init(), _fini(), and ladspa_descriptor()
 LADSPA_Descriptor * reverse_descriptor = NULL;
 
 //-----------------------------------------------------------------------------
@@ -296,7 +296,7 @@ void _init()
 		// assign the special property of the plugin, which is any of the three
       // defined in ladspa.h: LADSPA_PROPERTY_REALTIME, LADSPA_PROPERTY_INPLACE_BROKEN,
 		// and LADSPA_PROPERTY_HARD_RT_CAPABLE.  They are just ints (1, 2, and 4,
-		// respectively).  See ladpsa.h for what they actually mean.
+		// respectively).  See ladspa.h for what they actually mean.
 		reverse_descriptor->Properties = LADSPA_PROPERTY_HARD_RT_CAPABLE;
 		
 		// assign the plugin name
