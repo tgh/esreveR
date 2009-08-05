@@ -2,27 +2,29 @@ ESREVER (part of the StudioBlood LADSPA plugin package, hence the sb_ prefix)
 -------
 July 20, 2009. Tyler Hayes. Portland, OR.
 
-esreveR is an audio plug-in using LADSPA (Linux Audio Developers Simple Programming API).
-My first idea for a LADSPA plugin was to simply take a sound file and reverse it, because
-to my surprise I didn't see any on the internet that performed such a simple effect.
-But to my ignorance, pretty much all audio editing hosts already have that effect built-in.
-Not only that, but LADSPA plugins are mainly for effects that act like guitar effects
-pedals and can't take any entire file and manipulate it as such because the plugins use
-blocks of samples rather than the whole sound file.
+esreveR is an audio plug-in using LADSPA (Linux Audio Developers Simple
+Programming API). My first idea for a LADSPA plugin was to simply take a sound
+file and reverse it, because to my surprise I didn't see any on the internet
+that performed such a simple effect. But to my ignorance, pretty much all audio
+editing hosts already have that effect built-in. Not only that, but LADSPA
+plugins are mainly for effects that act like guitar effects pedals and can't
+take any entire file and manipulate it as such because the plugins use blocks
+of samples rather than the whole sound file.
 
-So this plugin takes each block of samples sent by the host, and reverses sub-blocks
-of random sizes (between 0.2 and 1.5 seconds).  Probably not much practical use for
-the average person, but more of a random effect for those like me who like to create
-weird and new sounds.
+So this plugin takes each block of samples sent by the host, and reverses
+sub-blocks of random sizes (between 0.2 and 1.5 seconds).  Probably not much 
+practical use for the average person, but more of a random effect for those like
+me who like to create weird and new sounds.
 
-IMPORTANT NOTE: for those learning how to use LADSPA and/or this plugin, take note at how
-the host executes the plugin for a stereo sound file: for each block of audio, it passes
-the left channel into run(), followed by the right channel into run() (might be the
-opposite for some hosts--I was using Audacity to test it out).  This is important because
-for plugins like this one where randomness is a factor, each channel will have noticeably
-different results.  Which is cool when you want an abstract, weird, random effect like
-this one, but not cool if you want each channel to be done the same, like your standard
-reverb or what have you.
+IMPORTANT NOTE: for those learning how to use LADSPA and/or this plugin, take
+note at how the host executes the plugin for a stereo sound file: for each block
+of audio, it passes the left channel into run(), followed by the right channel
+into run() (might be the opposite for some hosts--I was using Audacity to test
+it out).  This is important because for plugins like this one where randomness
+is a factor, each channel will have noticeably different results.  Which is cool
+when you want an abstract, weird, random effect like this one, but not cool if
+you want each channel to be done the same, like your standard reverb or what
+have you.
 
 The name esreveR is just Reverse backwards if you didn't already catch that.
 
@@ -35,13 +37,13 @@ See your favorite audio program's specifications to see if it supports LADSPA
 plug-ins.  I used Audacity to test the plugin, but will most likely use Ardour
 as my primary audio tool.
 
-I am still a student programmer at the time of this writing, so some of the comments
-in the source code are detailed and directed at the beginner as well.  Hopefully
-the comments will be beneficial to those who were like me in learning the API,
-and not too annoying for the pro's out there.
+I am still a student programmer at the time of this writing, so some of the
+comments in the source code are detailed and directed at the beginner as well.
+Hopefully the comments will be beneficial to those who were like me in learning
+the API, and not too annoying for the pro's out there.
 
-To install, make sure the LADSPA_PATH variable in the Makefile is correct to your
-environment, and just run (as root) make install.
+To install, make sure the LADSPA_PATH variable in the Makefile is correct to
+your environment, and just run (as root) make install.
 
 Here, for no reason, is the pseudo code for the run() function of sb_esreveR.c:
 
