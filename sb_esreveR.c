@@ -73,7 +73,9 @@ unsigned long GetRandomNaturalNumber(unsigned long lower_bound,
 //-- STRUCT FOR PORT CONNECTION --
 //--------------------------------
 
-typedef struct {
+
+typedef struct
+{
     // the sample rate (samples per second) of the sound from the host
     LADSPA_Data sample_rate;
     // data locations for the input & output audio ports
@@ -86,14 +88,16 @@ typedef struct {
 //-- FUNCTIONS --
 //---------------
 
+
 /*
  * Creates a Reverse plugin instance by allocating space for a plugin handle.
  * This function returns a LADSPA_Handle (which is a void * -- a pointer to
  * anything).
  */
 LADSPA_Handle instantiate_Reverse(const LADSPA_Descriptor * Descriptor,
-        unsigned long sample_rate) {
-    Reverse * reverse; // for a Reverse struct instance
+                                  unsigned long sample_rate)
+{
+    Reverse * reverse;
 
     // allocate space for a Reverse struct instance
     reverse = (Reverse *) malloc(sizeof (Reverse));
@@ -107,13 +111,15 @@ LADSPA_Handle instantiate_Reverse(const LADSPA_Descriptor * Descriptor,
 
 //-----------------------------------------------------------------------------
 
+
 /*
  * Make a connection between a specified port and it's corresponding data
  * location. For example, the output port should be "connected" to the place in
  * memory where that sound data to be played is located.
  */
 void connect_port_to_Reverse(LADSPA_Handle instance, unsigned long Port,
-                             LADSPA_Data * data_location) {
+                             LADSPA_Data * data_location)
+{
     Reverse * reverse;
 
     // cast the (void *) instance to (Revolution *) and set it to local pointer
@@ -128,12 +134,14 @@ void connect_port_to_Reverse(LADSPA_Handle instance, unsigned long Port,
 
 //-----------------------------------------------------------------------------
 
+
 /*
  * Here is where the actual audio manipulation is done.  It takes the sample
  * buffer and reverses sub-blocks of random length between 0.2 seconds and
  * 1.5 seconds.
  */
-void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count) {
+void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
+{
     // set local pointer to plugin instance
     Reverse * reverse = (Reverse *) instance;
 
@@ -142,13 +150,15 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count) {
      * if someone is developing a host program and it has some bugs in it, it
      * might pass some bad data.
      */
-    if (total_sample_count <= 1) {
+    if (total_sample_count <= 1)
+    {
         printf("\nEither 0, 1, or a negative numer of sample(s) were passed");
         printf(" into the plugin.\n");
         printf("\nPlugin not executed.\n");
         return;
     }
-    if (!reverse) {
+    if (!reverse)
+    {
         printf("\nPlugin received NULL pointer for plugin instance.\n");
         printf("\nPlugin not executed.\n");
         return;
@@ -156,7 +166,8 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count) {
     // with a sample rate of anything less than 10, a sub-block could be of
     // length 0 or 1, which does nothing when reversed.  Hence, the condition
     // of the sample rate being at least 10 (a sub-block of at least 2 samples).
-    if (reverse->sample_rate < 10) {
+    if (reverse->sample_rate < 10)
+    {
         printf("\nThis plugin does not accept sample rates less than 10");
         printf(" samples per second.\n");
         printf("\nPlugin not executed.\n");
@@ -183,7 +194,8 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count) {
     unsigned long out_index = 0;
 
     // break loop when the output index has reached the end of the output buffer
-    while (out_index < total_sample_count) {
+    while (out_index < total_sample_count)
+    {
         // set a random number lower bound
         unsigned long rand_num_lower_bound = start_position + MIN_SAMPLES;
         // set a random number upper bound
@@ -196,10 +208,11 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count) {
         // end of the buffer (this catches the special case where the whole
         // block passed in by the host is shorter than MIN_SAMPLES).
         if (MIN_SAMPLES >= total_sample_count
-                || rand_num_lower_bound >= total_sample_count - MIN_SAMPLES)
+            || rand_num_lower_bound >= total_sample_count - MIN_SAMPLES)
             in_index = total_sample_count - 1;
 
-        else {
+        else
+        {
             // set the random number upper bound to the point where the number
             // of samples left in the buffer is MIN_SAMPLES if the upper bound
             // is within minimum samples away from the end of the buffer
@@ -228,7 +241,8 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count) {
         // When 0 is decremented as an unsigned long it becomes that huge
         // positive number represented in hex as 0xFFFFFFFFFFFFFFFF, which of
         // course is always going to be greater than 0.
-        while (in_index >= start_position && in_index != 0xFFFFFFFFFFFFFFFF) {
+        while (in_index >= start_position && in_index != 0xFFFFFFFFFFFFFFFF)
+        {
             // set the output buffer's value to the appropriate input buffer
             // value
             output_writer[out_index] = input_reader[in_index];
@@ -246,10 +260,12 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count) {
 
 //-----------------------------------------------------------------------------
 
+
 /*
  * Frees the dynamic memory allocated for the Reverse structure instance.
  */
-void cleanup_Reverse(LADSPA_Handle instance) {
+void cleanup_Reverse(LADSPA_Handle instance)
+{
     if (instance)
         free(instance);
 }
@@ -261,19 +277,22 @@ LADSPA_Descriptor * reverse_descriptor = NULL;
 
 //-----------------------------------------------------------------------------
 
+
 /*
  * The _init() function is called whenever this plugin is first loaded
  * by the host using it.
  */
-void _init() {
+void _init()
+{
     // allocate memory for reverse_descriptor (it's just a pointer at this
     // point). In other words create an actual LADSPA_Descriptor struct instance
     // that reverse_descriptor will point to.
     reverse_descriptor = (LADSPA_Descriptor *)
-                         malloc(sizeof (LADSPA_Descriptor));
+            malloc(sizeof (LADSPA_Descriptor));
 
     // make sure malloc worked properly before initializing the struct fields
-    if (reverse_descriptor) {
+    if (reverse_descriptor)
+    {
         // assign the unique ID of the plugin
         reverse_descriptor->UniqueID = UNIQUE_ID;
 
@@ -319,26 +338,26 @@ void _init() {
         // allocate space for the temporary array with a length of the number
         // of ports (PortCount)
         temp_descriptor_array = (LADSPA_PortDescriptor *)
-                            calloc(PORT_COUNT, sizeof (LADSPA_PortDescriptor));
+                calloc(PORT_COUNT, sizeof (LADSPA_PortDescriptor));
 
         // set the instance LADSPA_PortDescriptor array (PortDescriptors)
         // pointer to the location temp_descriptor_array is pointing at.
         reverse_descriptor->PortDescriptors = (const LADSPA_PortDescriptor *)
-                                              temp_descriptor_array;
+                temp_descriptor_array;
 
         // set the port properties by ORing specific bit masks defined in
         // ladspa.h. this first one gives the first port the properties that
         // tell the host that this port takes input and is an audio port (not a
         // control port).
         temp_descriptor_array[REVERSE_INPUT] = LADSPA_PORT_INPUT |
-                                               LADSPA_PORT_AUDIO;
+                LADSPA_PORT_AUDIO;
 
         // this gives the second port the properties that tell the host that
         // this port is an output port and that it is an audio port (I don't
         // see any situation where one might be an output port, but not an
         // audio port...).
         temp_descriptor_array[REVERSE_OUTPUT] = LADSPA_PORT_OUTPUT |
-                                                LADSPA_PORT_AUDIO;
+                LADSPA_PORT_AUDIO;
 
         // set temp_descriptor_array to NULL for housekeeping--we don't need
         // that local variable anymore.
@@ -375,12 +394,12 @@ void _init() {
 
         // allocate space for two port hints (see ladspa.h for info on 'hints')
         temp_hints = (LADSPA_PortRangeHint *)
-                     calloc(PORT_COUNT, sizeof (LADSPA_PortRangeHint));
+                calloc(PORT_COUNT, sizeof (LADSPA_PortRangeHint));
 
         // set the instance PortRangeHints pointer to the location temp_hints
         // is pointed at.
         reverse_descriptor->PortRangeHints = (const LADSPA_PortRangeHint *)
-                                             temp_hints;
+                temp_hints;
 
         // set the port hint descriptors (which are ints). Since this is a
         // simple reverse effect, input and ouput don't need any range hints.
@@ -404,11 +423,13 @@ void _init() {
 
 //-----------------------------------------------------------------------------
 
+
 /*
  * Returns a descriptor of the requested plugin type (there is only one plugin
  * type in this library).
  */
-const LADSPA_Descriptor * ladspa_descriptor(unsigned long index) {
+const LADSPA_Descriptor * ladspa_descriptor(unsigned long index)
+{
     if (index == 0)
         return reverse_descriptor;
     else
@@ -417,14 +438,17 @@ const LADSPA_Descriptor * ladspa_descriptor(unsigned long index) {
 
 //-----------------------------------------------------------------------------
 
+
 /*
  * This function is automatically called when the host is done with the plugin
  * (when the dynamic library is unloaded).  If frees all dynamic memory
  * allocated for the LADSPA_Descriptor structure instantiated by
  * reverse_descriptor.
  */
-void _fini() {
-    if (reverse_descriptor) {
+void _fini()
+{
+    if (reverse_descriptor)
+    {
         free((char *) reverse_descriptor->Label);
         free((char *) reverse_descriptor->Name);
         free((char *) reverse_descriptor->Maker);
@@ -443,13 +467,15 @@ void _fini() {
 
 //-----------------------------------------------------------------------------
 
+
 /*
  * This function uses Richard Brent's uniform random number generator (see
  * comments in the function) to get a random unsigned long integer.  It is
  * seeded with the current time's seconds and nanoseconds.
  */
 unsigned long GetRandomNaturalNumber(unsigned long lower_bound,
-                                     unsigned long upper_bound) {
+                                     unsigned long upper_bound)
+{
     // get the current time to seed the generator
     struct timeval current_time;
     gettimeofday(&current_time, NULL);
@@ -469,9 +495,9 @@ unsigned long GetRandomNaturalNumber(unsigned long lower_bound,
      * and returns a number with the same call.
      */
     return lower_bound
-            + (xor4096i((unsigned long)
-                        (current_time.tv_usec * current_time.tv_sec))
-            % (upper_bound - lower_bound + 1));
+            + (xor4096i((unsigned long) (current_time.tv_usec *
+                                         current_time.tv_sec))
+               % (upper_bound - lower_bound + 1));
 }
 
 //---------------------------------- EOF --------------------------------------
