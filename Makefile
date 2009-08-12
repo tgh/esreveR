@@ -30,9 +30,9 @@ PLUGINS	=	sb_esreveR.so
 
 all: $(PLUGINS)
 
-sb_esreveR.o: sb_esreveR.c xorgens.c ladspa.h xorgens.h
+sb_esreveR.o: sb_esreveR.c ../xorgens.c ../ladspa.h ../xorgens.h
 	$(CC) $(CFLAGS) -c sb_esreveR.c
-	$(CC) $(CFLAGS) -c xorgens.c
+	$(CC) $(CFLAGS) -c ../xorgens.c
 
 sb_esreveR.so: sb_esreveR.o xorgens.o
 	$(CC) $(LDFLAGS) -o sb_esreveR.so sb_esreveR.o xorgens.o

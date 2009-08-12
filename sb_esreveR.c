@@ -38,8 +38,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
-#include "xorgens.h"
-#include "ladspa.h"
+#include "../xorgens.h"
+#include "../ladspa.h"
 
 
 //-----------------------
