@@ -38,8 +38,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
-#include "../xorgens.h"
-#include "../ladspa.h"
+#include <ladspa.h>
 
 
 //-----------------------
@@ -97,6 +96,8 @@ typedef struct
 LADSPA_Handle instantiate_Reverse(const LADSPA_Descriptor * Descriptor,
                                   unsigned long sample_rate)
 {
+    // get the current time to seed the generator
+    struct timeval current_time;
     Reverse * reverse;
 
     // allocate space for a Reverse struct instance
@@ -107,6 +108,17 @@ LADSPA_Handle instantiate_Reverse(const LADSPA_Descriptor * Descriptor,
 
     // send the LADSPA_Handle to the host. If malloc failed, NULL is returned.
     return reverse;
+
+    // seed the PRNG
+    /*
+     * NOTE: the tv_sec and tv_usec members of the timeval struct are
+     * long integers that represent the current time in seconds and
+     * nanoseconds, respectively, since Jan. 1, 1970.  They are used
+     * here to seed the generator.
+     */
+    gettimeofday(&current_time, NULL);
+    srandom((unsigned long) (current_time.tv_usec *
+			     current_time.tv_sec));
 }
 
 //-----------------------------------------------------------------------------
@@ -476,28 +488,7 @@ void _fini()
 unsigned long GetRandomNaturalNumber(unsigned long lower_bound,
                                      unsigned long upper_bound)
 {
-    // get the current time to seed the generator
-    struct timeval current_time;
-    gettimeofday(&current_time, NULL);
-
-    /*
-     * This next line uses a uniform random number generator by Richard Brent.
-     * (http://wwwmaths.anu.edu.au/~brent/random.html)
-     * which is licensed under the GNU Public License v2.
-     * See xorgens.c and xorgens.h for the source code.  Many thanks
-     * to Richard Brent.
-     *
-     * NOTE: the tv_sec and tv_usec members of the timeval struct are
-     * long integers that represent the current time in seconds and
-     * nanoseconds, respectively, since Jan. 1, 1970.  They are used
-     * here to seed the generator.  The generator is called with
-     * xor4096i(), which, unlike the C standard generator, is seeded
-     * and returns a number with the same call.
-     */
-    return lower_bound
-            + (xor4096i((unsigned long) (current_time.tv_usec *
-                                         current_time.tv_sec))
-               % (upper_bound - lower_bound + 1));
+    return lower_bound + random() % (upper_bound - lower_bound + 1);
 }
 
 //---------------------------------- EOF --------------------------------------
