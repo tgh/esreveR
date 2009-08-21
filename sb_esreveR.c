@@ -12,8 +12,6 @@
  * - Bart Massey of Portland State University (http://web.cecs.pdx.edu/~bart/)
  *   for his direct help
  * - Richard Furse (http://www.muse.demon.co.uk/) for his examples
- * - Richard Brent (http://wwwmaths.anu.edu.au/~brent/random.html) for his
- *   uniform random number generator
  * - David Benson (http://gdam.ffem.org/ladspa-doc/ladspa.html) for his
  *   tutorial
  * - Dave Phillips(http://linuxdevcenter.com/pub/a/linux/2001/02/02/ladspa.html)
@@ -96,8 +94,6 @@ typedef struct
 LADSPA_Handle instantiate_Reverse(const LADSPA_Descriptor * Descriptor,
                                   unsigned long sample_rate)
 {
-    // get the current time to seed the generator
-    struct timeval current_time;
     Reverse * reverse;
 
     // allocate space for a Reverse struct instance
@@ -109,7 +105,9 @@ LADSPA_Handle instantiate_Reverse(const LADSPA_Descriptor * Descriptor,
     // send the LADSPA_Handle to the host. If malloc failed, NULL is returned.
     return reverse;
 
-    // seed the PRNG
+    // get the current time to seed the generator
+    struct timeval current_time;
+    // seed the Pseudo Random Number Generator
     /*
      * NOTE: the tv_sec and tv_usec members of the timeval struct are
      * long integers that represent the current time in seconds and
@@ -117,8 +115,7 @@ LADSPA_Handle instantiate_Reverse(const LADSPA_Descriptor * Descriptor,
      * here to seed the generator.
      */
     gettimeofday(&current_time, NULL);
-    srandom((unsigned long) (current_time.tv_usec *
-			     current_time.tv_sec));
+    srandom((unsigned long) (current_time.tv_usec * current_time.tv_sec));
 }
 
 //-----------------------------------------------------------------------------
@@ -481,9 +478,8 @@ void _fini()
 
 
 /*
- * This function uses Richard Brent's uniform random number generator (see
- * comments in the function) to get a random unsigned long integer.  It is
- * seeded with the current time's seconds and nanoseconds.
+ * This function uses the C standard library's pseudo random number generator
+ * random() to get a random number between the given upper and lower bounds.
  */
 unsigned long GetRandomNaturalNumber(unsigned long lower_bound,
                                      unsigned long upper_bound)
