@@ -11,8 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
-#include "../xorgens.h"
-#include "../ladspa.h"
+#include <ladspa.h>
 
 
 //---------------------------
@@ -20,6 +19,9 @@
 //---------------------------
 
 void run_Reverse(LADSPA_Handle instance, unsigned long sample_count);
+
+unsigned long GetRandomNaturalNumber(unsigned long lower_bound,
+                                     unsigned long upper_bound);
 
 
 //------------------------
@@ -114,6 +116,10 @@ int main(int argc, char * argv[])
     }
     for (i = 0; i < BUFFER_SIZE; ++i)
         reverse->Output[i] = 0.0f;
+
+    // get the current time to seed the generator
+    struct timeval current_time;
+    gettimeofday(&current_time, NULL);
 
     run_Reverse(reverse, BUFFER_SIZE);
 
@@ -227,7 +233,7 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
             if (rand_num_upper_bound > total_sample_count - MIN_SAMPLES)
                 rand_num_upper_bound = total_sample_count - MIN_SAMPLES;
 
-            /*
+           /*
              * get a random number from a random number generator.
              *
              * The purpose of the random number here is to pick a random point
@@ -235,28 +241,8 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
              * reader will start reading backwards in order to get random sizes
              * of blocks to reverse.
              */
-            // get the current time to seed the generator
-            struct timeval current_time;
-            gettimeofday(&current_time, NULL);
-
-            /*
-             * This next line uses a random number generator by Richard Brent.
-             * (http://wwwmaths.anu.edu.au/~brent/random.html)
-             * which is licensed under the GNU Public License v2.
-             * See xorgens.c and xorgens.h for the source code.  Many thanks
-             * to Richard Brent.
-             *
-             * NOTE: the tv_sec and tv_usec members of the timeval struct are
-             * long integers that represent the current time in seconds and
-             * nanoseconds, respectively, since Jan. 1, 1970.  They are used
-             * here to seed the generator.  The generator is called with
-             * xor4096i(), which, unlike the C standard generator, is seeded
-             * and returns a number with the same call.
-             */
-            random_num = rand_num_lower_bound
-                         + (xor4096i((unsigned long) (current_time.tv_usec
-                                                      * current_time.tv_sec))
-                         % (rand_num_upper_bound - rand_num_lower_bound + 1));
+            random_num = GetRandomNaturalNumber(rand_num_lower_bound,
+                                                rand_num_upper_bound);
 
             // set the input index to one less than the random number, because
             // the start position will become the point at random_num.
@@ -293,5 +279,17 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
     fclose(write_file);
 //-----------------------------------------------------------------------------
 }
+
+
+/*
+ * This function uses the C standard library's pseudo random number generator
+ * random() to get a random number between the given upper and lower bounds.
+ */
+unsigned long GetRandomNaturalNumber(unsigned long lower_bound,
+                                     unsigned long upper_bound)
+{
+    return lower_bound + random() % (upper_bound - lower_bound + 1);
+}
+
 
 // EOF
