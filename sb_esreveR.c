@@ -61,9 +61,7 @@
 //-- FUNCTION PROTOTYPES --
 //-------------------------
 
-// gets a random unsigned long integer
-unsigned long GetRandomNaturalNumber(unsigned long lower_bound,
-                                     unsigned long upper_bound);
+// none
 
 
 //--------------------------------
@@ -236,8 +234,8 @@ void run_Reverse(LADSPA_Handle instance, unsigned long total_sample_count)
              * reader will start reading backwards in order to get random sizes
              * of blocks to reverse.
              */
-            random_num = GetRandomNaturalNumber(rand_num_lower_bound,
-                                                rand_num_upper_bound);
+            random_num = rand_num_lower_bound + random()
+                         % (rand_num_upper_bound - rand_num_lower_bound + 1);
 
             // set the input index to one less than the random number, because
             // the start position will become the point at random_num.
@@ -472,19 +470,6 @@ void _fini()
 
         free(reverse_descriptor);
     }
-}
-
-//-----------------------------------------------------------------------------
-
-
-/*
- * This function uses the C standard library's pseudo random number generator
- * random() to get a random number between the given upper and lower bounds.
- */
-unsigned long GetRandomNaturalNumber(unsigned long lower_bound,
-                                     unsigned long upper_bound)
-{
-    return lower_bound + random() % (upper_bound - lower_bound + 1);
 }
 
 //---------------------------------- EOF --------------------------------------
