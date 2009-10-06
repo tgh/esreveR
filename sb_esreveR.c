@@ -100,11 +100,9 @@ LADSPA_Handle instantiate_Reverse(const LADSPA_Descriptor * Descriptor,
     // set the Reverse instance sample rate value
     reverse->sample_rate = sample_rate;
 
-    // send the LADSPA_Handle to the host. If malloc failed, NULL is returned.
-    return reverse;
-
     // get the current time to seed the generator
     struct timeval current_time;
+
     // seed the Pseudo Random Number Generator
     /*
      * NOTE: the tv_sec and tv_usec members of the timeval struct are
@@ -114,6 +112,9 @@ LADSPA_Handle instantiate_Reverse(const LADSPA_Descriptor * Descriptor,
      */
     gettimeofday(&current_time, NULL);
     srandom((unsigned long) (current_time.tv_usec * current_time.tv_sec));
+
+    // send the LADSPA_Handle to the host. If malloc failed, NULL is returned.
+    return reverse;
 }
 
 //-----------------------------------------------------------------------------
